@@ -3,7 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Enums\TransportMode;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\JobStatus;
 
 class StoreJobRequest extends FormRequest
 {
@@ -12,13 +13,34 @@ class StoreJobRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Validate job creation only.
+     * Related data (transports, costs, revenue)
+     * are handled by their own endpoints.
+     */
     public function rules(): array
     {
         return [
-            'client_id' => ['required', 'integer', 'exists:clients,id'],
-            'transport_mode' => ['required', 'string', 'in:' . implode(',', array_column(TransportMode::cases(), 'value'))],
-            'origin' => ['required', 'string', 'max:255'],
-            'destination' => ['required', 'string', 'max:255'],
+            'client_id' => [
+                'required',
+                'integer',
+                'exists:clients,id',
+            ],
+
+            'status' => [
+                'required',
+                new Enum(JobStatus::class),
+            ],
+
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'client_id.required' => 'Client is required.',
+            'client_id.integer' => 'Client ID must be a valid integer.',
+            'client_id.exists' => 'Selected client does not exist.',
         ];
     }
 }

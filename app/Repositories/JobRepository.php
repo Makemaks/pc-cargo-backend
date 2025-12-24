@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Job;
 use App\Repositories\Contracts\JobRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class JobRepository extends BaseRepository implements JobRepositoryInterface
 {
@@ -12,6 +13,26 @@ class JobRepository extends BaseRepository implements JobRepositoryInterface
     {
         $this->model = $job;
     }
+
+    /**
+     * Fetch all jobs with financial relations loaded
+     * (for JobResource + JobFinancialHelper)
+     */
+    public function allWithFinancials(): Collection
+    {
+        return $this->model
+            ->newQuery()
+            ->with([
+                'client',
+                'transports',
+                'costLines',
+                'revenueLines',
+                'adjustmentLines',
+            ])
+            ->latest()
+            ->get();
+    }
+
 
     public function paginateWithClient(int $perPage = 15): LengthAwarePaginator
     {
@@ -25,6 +46,7 @@ class JobRepository extends BaseRepository implements JobRepositoryInterface
     public function loadFinancials(Job $job): Job
     {
         return $job->load([
+            'transports',
             'costLines',
             'revenueLines',
             'adjustmentLines',

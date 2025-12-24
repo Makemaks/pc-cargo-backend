@@ -3,7 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Enums\TransportMode;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\JobStatus;
 
 class UpdateJobRequest extends FormRequest
 {
@@ -12,12 +13,28 @@ class UpdateJobRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Validate JOB fields only
+     */
     public function rules(): array
     {
         return [
-            'transport_mode' => ['sometimes', 'string', 'in:' . implode(',', array_column(TransportMode::cases(), 'value'))],
-            'origin' => ['sometimes', 'string', 'max:255'],
-            'destination' => ['sometimes', 'string', 'max:255'],
+            'client_id' => [
+                'sometimes',
+                'integer',
+                'exists:clients,id',
+            ],
+
+            'status' => [
+                'sometimes',
+                new Enum(JobStatus::class),
+            ],
+
+            'currency' => [
+                'sometimes',
+                'string',
+                'size:3',
+            ],
         ];
     }
 }

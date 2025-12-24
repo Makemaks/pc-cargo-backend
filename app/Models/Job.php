@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\JobStatus;
 use App\Enums\PaymentStatus;
 
@@ -53,5 +54,10 @@ class Job extends Model
     public function notes(): HasMany
     {
         return $this->hasMany(JobNote::class);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 }

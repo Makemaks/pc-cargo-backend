@@ -21,10 +21,10 @@ class JobController extends Controller
     /**
      * List jobs.
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         return JobResource::collection(
-            $this->service->list()
+            $this->service->allWithFinancials()
         );
     }
 
@@ -53,10 +53,13 @@ class JobController extends Controller
      */
     public function update(UpdateJobRequest $request, int $id): JobResource
     {
-        $job = $this->service->update($id, $request->validated());
+        $this->service->update($id, $request->validated());
+
+        $job = $this->service->getWithFinancials($id);
 
         return new JobResource($job);
     }
+
 
     /**
      * Update job status.
@@ -70,4 +73,17 @@ class JobController extends Controller
 
         return new JobResource($job);
     }
+
+    /**
+     * Delete a job with its relations.
+     */
+    public function destroy(int $id)
+    {
+        $this->service->delete($id);
+
+        return response()->json([
+            'message' => 'Job deleted successfully.',
+        ], 204);
+    }
+
 }

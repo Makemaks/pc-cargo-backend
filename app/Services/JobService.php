@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Job;
 use App\Enums\JobStatus;
+use App\Enums\TransportStatus;
 use App\Repositories\Contracts\JobRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;
 
 class JobService extends BaseService
@@ -22,18 +24,35 @@ class JobService extends BaseService
         return $this->repository;
     }
 
+    public function allWithFinancials(): Collection
+    {
+        return $this->repository->allWithFinancials();
+    }
+
     /**
      * Create a job with auto-generated reference.
+     * Only job data is handled here.
      */
     public function create(array $data): Job
     {
         return DB::transaction(function () use ($data) {
-            $data['job_reference'] = $this->generateJobReference();
-            $data['status'] = JobStatus::Draft;
 
-            return $this->repository->create($data);
+            $status = $data['status'] ?? JobStatus::Draft;
+
+            if ($status === JobStatus::Completed) {
+                throw new RuntimeException('Job cannot be created as completed.');
+            }
+
+            $job = $this->repository->create([
+                'job_reference' => $this->generateJobReference(),
+                'client_id' => $data['client_id'],
+                'status' => $status,
+            ]);
+
+            return $this->repository->loadFinancials($job);
         });
     }
+
 
     /**
      * Update job details only if job is not completed.
@@ -149,4 +168,41 @@ class JobService extends BaseService
 
         return $prefix . '-' . str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Delete job and its relations.
+     *
+     * Compatible with BaseService::delete(int $id): bool
+     */
+    public function delete(int $id): bool
+    {
+        return DB::transaction(function () use ($id) {
+
+            $job = $this->findOrFail($id);
+
+            /**
+             * Domain guard
+             */
+            $this->guardNotCompleted($job);
+
+            /**
+             * Delete relations explicitly
+             * (no hidden cascades)
+             */
+            $job->transports()->delete();
+            $job->notes()->delete();
+
+            $job->costLines()->delete();
+            $job->revenueLines()->delete();
+            $job->adjustmentLines()->delete();
+            $job->payments()->delete();
+
+            /**
+             * Delegate actual deletion to repository
+             * (BaseService compatible)
+             */
+            return $this->repository()->delete($job);
+        });
+    }
+
 }
