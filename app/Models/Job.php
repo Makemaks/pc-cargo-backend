@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\JobStatus;
@@ -10,6 +11,8 @@ use App\Enums\PaymentStatus;
 
 class Job extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'cargo_jobs';
 
     protected $fillable = [
@@ -24,7 +27,12 @@ class Job extends Model
         'status' => JobStatus::class,
         'payment_status' => PaymentStatus::class,
         'completed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
+
+    /* ==========================
+     | Relationships
+     ========================== */
 
     public function transports(): HasMany
     {

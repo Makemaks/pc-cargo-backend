@@ -24,7 +24,7 @@ class JobSeeder extends Seeder
                     : JobStatus::InTransit,
                 'payment_status' => $isCompleted
                     ? PaymentStatus::Paid
-                    : PaymentStatus::Unpaid,
+                    : PaymentStatus::Pending,
                 'completed_at'   => $isCompleted
                     ? Carbon::now()->subDays(2)
                     : null,
