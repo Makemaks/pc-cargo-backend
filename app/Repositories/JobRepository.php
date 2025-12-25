@@ -62,4 +62,19 @@ class JobRepository extends BaseRepository implements JobRepositoryInterface
             ->first();
     }
 
+    public function findByReference(string $reference): ?Job
+    {
+        return $this->model
+            ->newQuery()
+            ->where('job_reference', $reference)
+            ->with([
+                'client',
+                'transports',
+                'payments',
+                'revenueLines',
+            ])
+            ->first();
+    }
+
+
 }

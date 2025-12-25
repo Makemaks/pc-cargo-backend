@@ -16,4 +16,6 @@ interface JobRepositoryInterface extends BaseRepositoryInterface
 
     public function allWithFinancials(): Collection;
 
+    public function findByReference(string $reference): ?Job;
+
 }

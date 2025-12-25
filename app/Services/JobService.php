@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Job;
 use App\Enums\JobStatus;
-use App\Enums\TransportStatus;
 use App\Repositories\Contracts\JobRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;
@@ -203,6 +203,17 @@ class JobService extends BaseService
              */
             return $this->repository()->delete($job);
         });
+    }
+
+    public function getByReference(string $reference): Job
+    {
+        $job = $this->repository->findByReference($reference);
+
+        if (! $job) {
+            throw new ModelNotFoundException('Job not found.');
+        }
+
+        return $job;
     }
 
 }

@@ -9,12 +9,16 @@ use App\Repositories\Contracts\JobCostRepositoryInterface;
 use App\Repositories\Contracts\JobRevenueRepositoryInterface;
 use App\Repositories\Contracts\JobAdjustmentRepositoryInterface;
 use App\Repositories\Contracts\JobTransportRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\UserRepository;
 use App\Repositories\JobTransportRepository;
 use App\Repositories\JobAdjustmentRepository;
 use App\Repositories\JobRevenueRepository;
 use App\Repositories\JobCostRepository;
 use App\Repositories\ClientRepository;
 use App\Repositories\JobRepository;
+use App\Repositories\PaymentRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -50,5 +54,14 @@ class RepositoryServiceProvider extends ServiceProvider
             JobTransportRepository::class
         );
 
+        $this->app->bind(
+            UserRepositoryInterface::class,
+            UserRepository::class
+        );
+
+        $this->app->bind(
+            PaymentRepositoryInterface::class,
+            PaymentRepository::class
+        );
     }
 }

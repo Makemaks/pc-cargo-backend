@@ -7,6 +7,8 @@ use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateJobRequest;
 use App\Http\Requests\UpdateJobStatusRequest;
 use App\Http\Resources\JobResource;
+use App\Http\Resources\PublicJobResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class JobController extends Controller
@@ -84,6 +86,16 @@ class JobController extends Controller
         return response()->json([
             'message' => 'Job deleted successfully.',
         ], 204);
+    }
+
+    /**
+     * Show job by reference (PUBLIC).
+     */
+    public function showByReference(string $reference): PublicJobResource
+    {
+        $job = $this->service->getByReference($reference);
+
+        return new PublicJobResource($job);
     }
 
 }
