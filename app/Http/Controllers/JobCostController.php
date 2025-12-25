@@ -3,32 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\Job;
-use App\Services\PaymentService;
+use App\Services\JobCostService;
+use App\Http\Requests\StoreJobCostRequest;
+use App\Http\Requests\UpdateJobCostRequest;
+use App\Http\Resources\JobCostLineResource;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\JsonResponse;
 
-class PaymentController extends Controller
+class JobCostController extends Controller
 {
-    protected PaymentService $service;
+    protected JobCostService $service;
 
-    public function __construct(PaymentService $service)
+    public function __construct(JobCostService $service)
     {
         $this->service = $service;
     }
 
-    /**
-     * ==========================
-     * Create Payment Order
-     * ==========================
-     *
-     * Route:
-     * POST /jobs/{job}/payments/{provider}/order
-     */
-    public function createOrder(Job $job, string $provider): JsonResponse
+    public function index(Job $job): ResourceCollection
     {
-        $payment = $this->service->createForJob($job, $provider);
+        return JobCostLineResource::collection(
+            $this->service->listByJob($job)
+        );
+    }
 
-        return response()->json([
-            'order_id' => $payment->external_reference,
-        ]);
+    public function store(StoreJobCostRequest $request, Job $job): JobCostLineResource
+    {
+        $cost = $this->service->createForJob($job, $request->validated());
+
+        return new JobCostLineResource($cost);
+    }
+
+    public function update(UpdateJobCostRequest $request, Job $job, int $id): JobCostLineResource
+    {
+        $cost = $this->service->updateCost($id, $job, $request->validated());
+
+        return new JobCostLineResource($cost);
+    }
+
+    public function destroy(Job $job, int $id): JsonResponse
+    {
+        $this->service->deleteCost($id, $job);
+
+        return response()->json(null, 204);
     }
 }
